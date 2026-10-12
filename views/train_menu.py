@@ -2,8 +2,8 @@ import customtkinter as ctk
 
 
 class TrainMenu(ctk.CTkFrame):
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self, parent, on_back_click):
+        super().__init__(parent, fg_color="black", corner_radius=0)
 
         font_arcade = ctk.CTkFont(
             family="Consolas",
@@ -73,3 +73,11 @@ class TrainMenu(ctk.CTkFrame):
             )
 
             self.entries[name] = entry
+
+        back_button = ctk.CTkButton(
+            self,
+            text="Powrót",
+            command=on_back_click
+        )
+
+        back_button.pack(pady=(0, 20))

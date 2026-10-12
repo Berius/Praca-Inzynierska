@@ -5,8 +5,8 @@ from views.train_menu import TrainMenu
 
 ctk.set_appearance_mode("dark")
 
-app = ctk.CTk()
-app.geometry("600x700")
+app = ctk.CTk(fg_color="black")
+app.geometry("800x650")
 app.title("Praca inżynierska")
 
 current_view = None
@@ -27,7 +27,7 @@ def change_view(view):
 
 
 def show_train():
-    change_view(TrainMenu(app))
+    change_view(TrainMenu(app, on_back_click=show_home))
 
 
 def show_home():

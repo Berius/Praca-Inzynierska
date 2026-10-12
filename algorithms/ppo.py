@@ -57,6 +57,7 @@ class PPOService:
             vf_coef=vf_coef,
             seed=seed,
             verbose=1,
+            tensorboard_log="./trained_models_logs/",
         )
 
         model.learn(total_timesteps=total_timesteps)
