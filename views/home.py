@@ -2,6 +2,7 @@ import customtkinter as ctk
 from pathlib import Path
 from PIL import Image
 
+
 class Home(ctk.CTkFrame):
     def __init__(self, parent, on_train_click, on_model_click, on_quit_click):
         super().__init__(parent, fg_color="black", corner_radius=0)
@@ -26,7 +27,6 @@ class Home(ctk.CTkFrame):
         )
 
         label.place(relx=0.5, rely=0.1, anchor="center")
-
 
         train_button = ctk.CTkButton(
             self,

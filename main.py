@@ -1,6 +1,9 @@
 import customtkinter as ctk
 
+from control.train_controller import TrainController
+from control.model_selection_controller import ModelSelectionController
 from views.home import Home
+from views.model_selection import ModelSelection
 from views.train_menu import TrainMenu
 
 ctk.set_appearance_mode("dark")
@@ -27,13 +30,32 @@ def change_view(view):
 
 
 def show_train():
-    change_view(TrainMenu(app, on_back_click=show_home))
+    controller = TrainController()
+    change_view(
+        TrainMenu(
+            app,
+            on_back_click=show_home,
+            on_train_click=controller.start_training,
+        )
+    )
+
+
+def show_model_selection():
+    controller = ModelSelectionController()
+    change_view(
+        ModelSelection(
+            app,
+            models=controller.get_models(),
+            on_play_click=controller.play,
+            on_back_click=show_home,
+        )
+    )
 
 
 def show_home():
     change_view(
         Home(
-            app, on_train_click=show_train, on_model_click=show_train, on_quit_click=app.destroy,
+            app, on_train_click=show_train, on_model_click=show_model_selection, on_quit_click=app.destroy,
         )
     )
 

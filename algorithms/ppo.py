@@ -6,7 +6,7 @@ from stable_baselines3.common.vec_env import VecFrameStack
 
 
 def linear_schedule(initial_value):
-    return lambda progress_remaining: progress_remaining * initial_value
+    return lambda progress_remaining: max(0.0, progress_remaining) * initial_value
 
 
 class PPOService:
@@ -43,23 +43,25 @@ class PPOService:
         )
         env = VecFrameStack(env, n_stack=4)
 
-        model = PPO(
-            "CnnPolicy",
-            env,
-            learning_rate=linear_schedule(learning_rate),
-            n_steps=n_steps,
-            batch_size=batch_size,
-            n_epochs=n_epochs,
-            gamma=gamma,
-            gae_lambda=gae_lambda,
-            clip_range=linear_schedule(clip_range),
-            ent_coef=ent_coef,
-            vf_coef=vf_coef,
-            seed=seed,
-            verbose=1,
-            tensorboard_log="./trained_models_logs/",
-        )
+        try:
+            model = PPO(
+                "CnnPolicy",
+                env,
+                learning_rate=linear_schedule(learning_rate),
+                n_steps=n_steps,
+                batch_size=batch_size,
+                n_epochs=n_epochs,
+                gamma=gamma,
+                gae_lambda=gae_lambda,
+                clip_range=linear_schedule(clip_range),
+                ent_coef=ent_coef,
+                vf_coef=vf_coef,
+                seed=seed,
+                verbose=1,
+                tensorboard_log="./trained_models_logs/",
+            )
 
-        model.learn(total_timesteps=total_timesteps)
-        model.save("trained_models/ppo_space_invaders")
-        env.close()
+            model.learn(total_timesteps=total_timesteps)
+            model.save("trained_models/ppo")
+        finally:
+            env.close()
