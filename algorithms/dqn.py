@@ -10,7 +10,7 @@ def linear_schedule(initial_value):
 
 
 class DQNService:
-    def train(self, form):
+    def train(self, form, callback):
         total_timesteps = int(form["total_timesteps"])
         learning_rate = float(form["learning_rate"])
         buffer_size = int(form["buffer_size"])
@@ -69,7 +69,7 @@ class DQNService:
                 tensorboard_log="./trained_models_logs/",
             )
 
-            model.learn(total_timesteps=total_timesteps)
-            model.save("trained_models/dqn")
+            model.learn(total_timesteps=total_timesteps, callback=callback)
+            return model
         finally:
             env.close()

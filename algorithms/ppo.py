@@ -10,7 +10,7 @@ def linear_schedule(initial_value):
 
 
 class PPOService:
-    def train(self, form):
+    def train(self, form, callback):
         total_timesteps = int(form["total_timesteps"])
         learning_rate = float(form["learning_rate"])
         n_steps = int(form["n_steps"])
@@ -61,7 +61,7 @@ class PPOService:
                 tensorboard_log="./trained_models_logs/",
             )
 
-            model.learn(total_timesteps=total_timesteps)
-            model.save("trained_models/ppo")
+            model.learn(total_timesteps=total_timesteps, callback=callback)
+            return model
         finally:
             env.close()

@@ -15,14 +15,13 @@ class Home(ctk.CTkFrame):
         crab_label.place(relx=1, rely=1, x=80, y=80, anchor="se")
 
         font_arcade = ctk.CTkFont(
-            family="Consolas",
             size=24,
             weight="bold"
         )
 
         label = ctk.CTkLabel(
             self,
-            text="HELLO WORLD",
+            text="SPACE INVADERS RL",
             font=font_arcade
         )
 

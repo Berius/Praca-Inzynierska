@@ -8,7 +8,7 @@ class ModelSelection(ctk.CTkFrame):
         title = ctk.CTkLabel(
             self,
             text="Wybierz model",
-            font=ctk.CTkFont(family="Consolas", size=24, weight="bold"),
+            font=ctk.CTkFont(size=24, weight="bold"),
         )
         title.pack(pady=(20, 10))
 

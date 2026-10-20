@@ -5,8 +5,10 @@ from control.model_selection_controller import ModelSelectionController
 from views.home import Home
 from views.model_selection import ModelSelection
 from views.train_menu import TrainMenu
+from views.training_progress import TrainingProgress
 
 ctk.set_appearance_mode("dark")
+ctk.ThemeManager.theme["CTkFont"]["family"] = "Consolas"
 
 app = ctk.CTk(fg_color="black")
 app.geometry("800x650")
@@ -29,13 +31,26 @@ def change_view(view):
     )
 
 
-def show_train():
-    controller = TrainController()
+def show_train(form=None):
+    controller = TrainController(show_training_progress)
+    view = TrainMenu(
+        app,
+        on_back_click=show_home,
+        on_train_click=controller.start_training,
+    )
+    if form is not None:
+        view.set_form(form)
+    change_view(view)
+
+
+def show_training_progress(form, progress_queue, stop_event):
     change_view(
-        TrainMenu(
+        TrainingProgress(
             app,
-            on_back_click=show_home,
-            on_train_click=controller.start_training,
+            int(form["total_timesteps"]),
+            progress_queue,
+            stop_event,
+            on_back_click=lambda: show_train(form),
         )
     )
 

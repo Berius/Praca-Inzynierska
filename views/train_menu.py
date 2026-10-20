@@ -1,4 +1,53 @@
 import customtkinter as ctk
+from CTkToolTip import CTkToolTip
+
+PPO_TOOLTIPS = {
+    "total_timesteps": (
+        "Łączna liczba kroków treningu ze wszystkich środowisk. "
+        "PPO kończy pełną serię zbierania doświadczeń, więc może przekroczyć tę liczbę."
+    ),
+    "learning_rate": (
+        "Współczynnik określający wielkość aktualizacji wag sieci. "
+        "W tej aplikacji podana wartość początkowa maleje liniowo do zera."
+    ),
+    "n_steps": (
+        "Liczba kroków zbieranych z każdego środowiska przed aktualizacją modelu. "
+        "Bufor mieści n_steps × n_envs próbek; tutaj n_envs = 8."
+    ),
+    "batch_size": (
+        "Liczba próbek w jednej minipaczce podczas uczenia. "
+        "Zebrane doświadczenia są dzielone na takie minipaczki."
+    ),
+    "n_epochs": (
+        "Liczba przejść przez zebrane doświadczenia podczas jednej fazy uczenia. "
+        "Te same dane są wykorzystywane wielokrotnie."
+    ),
+    "gamma": (
+        "Współczynnik dyskontowania przyszłych nagród. "
+        "Wartość bliższa 1 zwiększa znaczenie nagród odległych w czasie."
+    ),
+    "gae_lambda": (
+        "Parametr estymatora przewagi GAE, regulujący kompromis "
+        "między obciążeniem a wariancją oszacowania."
+    ),
+    "clip_range": (
+        "Parametr przycinania funkcji celu PPO, pomagający ograniczać duże zmiany polityki. "
+        "W tej aplikacji maleje liniowo od podanej wartości do zera."
+    ),
+    "ent_coef": (
+        "Waga składnika entropii w funkcji straty. "
+        "Większa wartość wzmacnia zachętę do bardziej zróżnicowanego wyboru akcji."
+    ),
+    "vf_coef": (
+        "Waga błędu funkcji wartości w całkowitej funkcji straty. "
+        "Określa udział uczenia przewidywanej sumy przyszłych, zdyskontowanych nagród."
+    ),
+    "seed": (
+        "Ziarno generatorów liczb pseudolosowych. "
+        "Ułatwia powtarzanie eksperymentów w tych samych warunkach, "
+        "ale nie gwarantuje identycznych wyników na każdym sprzęcie."
+    ),
+}
 
 
 class TrainMenu(ctk.CTkFrame):
@@ -6,7 +55,6 @@ class TrainMenu(ctk.CTkFrame):
         super().__init__(parent, fg_color="black", corner_radius=0)
 
         font_arcade = ctk.CTkFont(
-            family="Consolas",
             size=24,
             weight="bold"
         )
@@ -28,8 +76,19 @@ class TrainMenu(ctk.CTkFrame):
         self.algorithm_select.pack(pady=10)
         self.algorithm_select.set("PPO")
 
-        self.form_frame = ctk.CTkFrame(self)
-        self.form_frame.pack(pady=10, padx=20)
+        self.form_frame = ctk.CTkScrollableFrame(self, height=250)
+        self.form_frame.pack(fill="both", expand=True, pady=10, padx=20)
+        self.form_frame.grid_columnconfigure((0, 1), weight=1)
+
+        name_frame = ctk.CTkFrame(self, fg_color="transparent")
+        name_frame.pack(padx=20, pady=(0, 10))
+
+        name_label = ctk.CTkLabel(name_frame, text="Nazwa modelu")
+        name_label.grid(row=0, column=0, padx=(0, 10))
+
+        self.model_name_entry = ctk.CTkEntry(name_frame, width=260)
+        self.model_name_entry.insert(0, "model")
+        self.model_name_entry.grid(row=0, column=1)
 
         self.train_button = ctk.CTkButton(
             self,
@@ -135,9 +194,28 @@ class TrainMenu(ctk.CTkFrame):
                 pady=5
             )
 
+            if algorithm == "PPO":
+                CTkToolTip(
+                    label,
+                    message=PPO_TOOLTIPS[name],
+                    delay=0.3,
+                    wraplength=300,
+                    justify="left",
+                )
+
             self.entries[name] = entry
+
+    def set_form(self, form):
+        self.algorithm_select.set(form["algorithm"])
+        self.update_fields(form["algorithm"])
+        for name, entry in self.entries.items():
+            entry.delete(0, "end")
+            entry.insert(0, form[name])
+        self.model_name_entry.delete(0, "end")
+        self.model_name_entry.insert(0, form["model_name"])
 
     def get_form(self):
         form = {name: entry.get() for name, entry in self.entries.items()}
         form["algorithm"] = self.algorithm_select.get()
+        form["model_name"] = self.model_name_entry.get()
         return form
