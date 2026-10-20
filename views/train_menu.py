@@ -3,49 +3,73 @@ from CTkToolTip import CTkToolTip
 
 PPO_TOOLTIPS = {
     "total_timesteps": (
-        "Łączna liczba kroków treningu ze wszystkich środowisk. "
-        "PPO kończy pełną serię zbierania doświadczeń, więc może przekroczyć tę liczbę."
+        "Określa, ile łącznie kroków ma wykonać agent podczas treningu. "
+        "Im większa wartość, tym dłużej model będzie się uczył. "
+        "Liczba kroków jest sumowana ze wszystkich 8 środowisk."
     ),
+
     "learning_rate": (
-        "Współczynnik określający wielkość aktualizacji wag sieci. "
-        "W tej aplikacji podana wartość początkowa maleje liniowo do zera."
+        "Określa, jak mocno model zmienia swoje wagi podczas uczenia. "
+        "Większa wartość oznacza większe zmiany, ale może powodować niestabilność. "
+        "Mniejsza wartość oznacza ostrożniejsze uczenie. "
     ),
+
     "n_steps": (
-        "Liczba kroków zbieranych z każdego środowiska przed aktualizacją modelu. "
-        "Bufor mieści n_steps × n_envs próbek; tutaj n_envs = 8."
+        "Określa, ile kroków wykona każde środowisko, zanim model rozpocznie aktualizację. "
+        "Większa wartość oznacza więcej danych do jednej fazy uczenia, "
+        "ale także większe zużycie pamięci."
     ),
+
     "batch_size": (
-        "Liczba próbek w jednej minipaczce podczas uczenia. "
-        "Zebrane doświadczenia są dzielone na takie minipaczki."
+        "Określa, ile próbek model analizuje jednocześnie podczas jednej aktualizacji wag. "
+        "Większa wartość zwykle daje bardziej stabilne aktualizacje, "
+        "Mniejsza wartość oznacza bardziej zmienne aktualizacje."
     ),
+
     "n_epochs": (
-        "Liczba przejść przez zebrane doświadczenia podczas jednej fazy uczenia. "
-        "Te same dane są wykorzystywane wielokrotnie."
+        "Określa, ile razy model uczy się na tym samym zestawie zebranych danych. "
+        "Większa wartość pozwala intensywniej wykorzystać próbki, "
+        "ale wydłuża uczenie i może prowadzić do nadmiernego dopasowania."
     ),
+
     "gamma": (
-        "Współczynnik dyskontowania przyszłych nagród. "
-        "Wartość bliższa 1 zwiększa znaczenie nagród odległych w czasie."
+        "Określa, jak ważne są przyszłe nagrody dla agenta. "
+        "Wartość bliska 1 sprawia, że agent mocniej uwzględnia odległe nagrody. "
+        "Mniejsza wartość powoduje skupienie na nagrodach otrzymywanych szybciej."
     ),
+
     "gae_lambda": (
-        "Parametr estymatora przewagi GAE, regulujący kompromis "
-        "między obciążeniem a wariancją oszacowania."
+        "Określa, jak model wykorzystuje nagrody z kolejnych kroków "
+        "do oceny, czy wykonana akcja była korzystna. "
+        "Wartość bliższa 1 uwzględnia więcej informacji z dalszych kroków, "
+        "ale może zwiększać zmienność ocen. "
+        "Mniejsza wartość opiera ocenę bardziej na krótkoterminowych przewidywaniach."
     ),
+
     "clip_range": (
-        "Parametr przycinania funkcji celu PPO, pomagający ograniczać duże zmiany polityki. "
-        "W tej aplikacji maleje liniowo od podanej wartości do zera."
+        "Określa, jak mocno PPO ogranicza zmiany sposobu wybierania akcji "
+        "podczas aktualizacji modelu. "
+        "Mniejsza wartość wymusza ostrożniejsze zmiany. "
+        "Większa pozwala na większe zmiany, ale może pogorszyć stabilność uczenia. "
     ),
+
     "ent_coef": (
-        "Waga składnika entropii w funkcji straty. "
-        "Większa wartość wzmacnia zachętę do bardziej zróżnicowanego wyboru akcji."
+        "Określa, jak mocno model jest zachęcany do próbowania różnych akcji. "
+        "Większa wartość sprzyja eksploracji zamiast wybierania ciągle tych samych akcji. "
+        "Wartość 0 wyłącza dodatkową zachętę do eksploracji."
     ),
+
     "vf_coef": (
-        "Waga błędu funkcji wartości w całkowitej funkcji straty. "
-        "Określa udział uczenia przewidywanej sumy przyszłych, zdyskontowanych nagród."
+        "Określa, jak duże znaczenie podczas uczenia ma poprawność "
+        "przewidywania przyszłych nagród. "
+        "Większa wartość zwiększa nacisk na uczenie tych przewidywań. "
+        "Mniejsza zmniejsza ich wpływ na całkowitą funkcję straty."
     ),
+
     "seed": (
-        "Ziarno generatorów liczb pseudolosowych. "
-        "Ułatwia powtarzanie eksperymentów w tych samych warunkach, "
-        "ale nie gwarantuje identycznych wyników na każdym sprzęcie."
+        "Ustawia ziarno losowości używane podczas treningu. "
+        "Ta sama wartość pomaga porównywać eksperymenty w podobnych warunkach. "
+        "Zmiana wartości może prowadzić do innych wyników treningu. "
     ),
 }
 
@@ -76,9 +100,9 @@ class TrainMenu(ctk.CTkFrame):
         self.algorithm_select.pack(pady=10)
         self.algorithm_select.set("PPO")
 
-        self.form_frame = ctk.CTkScrollableFrame(self, height=250)
-        self.form_frame.pack(fill="both", expand=True, pady=10, padx=20)
-        self.form_frame.grid_columnconfigure((0, 1), weight=1)
+        self.form_frame = ctk.CTkFrame(self)
+        self.form_frame.pack(fill="x", pady=10, padx=20)
+        self.form_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
         name_frame = ctk.CTkFrame(self, fg_color="transparent")
         name_frame.pack(padx=20, pady=(0, 10))
@@ -168,30 +192,38 @@ class TrainMenu(ctk.CTkFrame):
             widget.destroy()
         self.entries = {}
 
-        for row, (name, label_text, default_value) in enumerate(fields):
+        for index, (name, label_text, default_value) in enumerate(fields):
+            row = index // 2
+            column = (index % 2) * 2
+
             label = ctk.CTkLabel(
                 self.form_frame,
-                text=label_text
+                text=label_text,
+                wraplength=180,
+                justify="left",
             )
 
             entry = ctk.CTkEntry(
-                self.form_frame
+                self.form_frame,
+                width=130,
             )
 
             entry.insert(0, default_value)
 
             label.grid(
                 row=row,
-                column=0,
+                column=column,
                 padx=10,
-                pady=5
+                pady=5,
+                sticky="w",
             )
 
             entry.grid(
                 row=row,
-                column=1,
+                column=column + 1,
                 padx=10,
-                pady=5
+                pady=5,
+                sticky="ew",
             )
 
             if algorithm == "PPO":
