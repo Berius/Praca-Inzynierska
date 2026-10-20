@@ -4,7 +4,7 @@ from PIL import Image
 
 
 class Home(ctk.CTkFrame):
-    def __init__(self, parent, on_train_click, on_model_click, on_quit_click):
+    def __init__(self, parent, on_train_click, on_model_click, on_compare_click, on_quit_click):
         super().__init__(parent, fg_color="black", corner_radius=0)
 
         crab_path = Path(__file__).resolve().parent.parent / "assets" / "img" / "crab.png"
@@ -33,7 +33,7 @@ class Home(ctk.CTkFrame):
             command=on_train_click
         )
 
-        train_button.place(relx=0.5, rely=0.5, anchor="center")
+        train_button.place(relx=0.5, rely=0.4, anchor="center")
 
         model_button = ctk.CTkButton(
             self,
@@ -41,7 +41,14 @@ class Home(ctk.CTkFrame):
             command=on_model_click
         )
 
-        model_button.place(relx=0.5, rely=0.65, anchor="center")
+        model_button.place(relx=0.5, rely=0.53, anchor="center")
+
+        compare_button = ctk.CTkButton(
+            self,
+            text="Porównywanie",
+            command=on_compare_click,
+        )
+        compare_button.place(relx=0.5, rely=0.66, anchor="center")
 
         quit_button = ctk.CTkButton(
             self,
@@ -49,4 +56,4 @@ class Home(ctk.CTkFrame):
             command=on_quit_click
         )
 
-        quit_button.place(relx=0.5, rely=0.80, anchor="center")
+        quit_button.place(relx=0.5, rely=0.79, anchor="center")

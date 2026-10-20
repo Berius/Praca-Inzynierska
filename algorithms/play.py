@@ -48,7 +48,7 @@ class Play:
             done = False
 
             while not done:
-                action, _ = model.predict(observation, deterministic=True)
+                action, _ = model.predict(observation, deterministic=False)
                 observation, rewards, dones, _ = env.step(action)
                 score += float(rewards[0])
                 done = bool(dones[0])

@@ -1,12 +1,11 @@
+from pathlib import Path
+
 import ale_py
 import gymnasium as gym
 from stable_baselines3 import A2C
+from stable_baselines3.common.sb2_compat.rmsprop_tf_like import RMSpropTFLike
 from stable_baselines3.common.env_util import make_atari_env
 from stable_baselines3.common.vec_env import VecFrameStack
-
-
-def linear_schedule(initial_value):
-    return lambda progress_remaining: max(0.0, progress_remaining) * initial_value
 
 
 class A2CService:
@@ -23,6 +22,13 @@ class A2CService:
         use_rms_prop = str(form["use_rms_prop"]).lower() in ("true", "1")
         normalize_advantage = str(form["normalize_advantage"]).lower() in ("true", "1")
         seed = int(form["seed"])
+
+        policy_kwargs = {}
+        if use_rms_prop:
+            policy_kwargs = {
+                "optimizer_class": RMSpropTFLike,
+                "optimizer_kwargs": {"eps": rms_prop_eps},
+            }
 
         gym.register_envs(ale_py)
 
@@ -48,7 +54,7 @@ class A2CService:
             model = A2C(
                 "CnnPolicy",
                 env,
-                learning_rate=linear_schedule(learning_rate),
+                learning_rate=learning_rate,
                 n_steps=n_steps,
                 gamma=gamma,
                 gae_lambda=gae_lambda,
@@ -57,13 +63,18 @@ class A2CService:
                 max_grad_norm=max_grad_norm,
                 rms_prop_eps=rms_prop_eps,
                 use_rms_prop=use_rms_prop,
+                policy_kwargs=policy_kwargs,
                 normalize_advantage=normalize_advantage,
                 seed=seed,
                 verbose=1,
-                tensorboard_log="./trained_models_logs/",
+                tensorboard_log=str(Path(__file__).resolve().parent.parent / "trained_models_logs"),
             )
 
-            model.learn(total_timesteps=total_timesteps, callback=callback)
+            model.learn(
+                total_timesteps=total_timesteps,
+                callback=callback,
+                tb_log_name=f"a2c_{form['model_name']}",
+            )
             return model
         finally:
             env.close()

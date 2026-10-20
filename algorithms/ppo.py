@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import ale_py
 import gymnasium as gym
 from stable_baselines3 import PPO
@@ -58,10 +60,14 @@ class PPOService:
                 vf_coef=vf_coef,
                 seed=seed,
                 verbose=1,
-                tensorboard_log="./trained_models_logs/",
+                tensorboard_log=str(Path(__file__).resolve().parent.parent / "trained_models_logs"),
             )
 
-            model.learn(total_timesteps=total_timesteps, callback=callback)
+            model.learn(
+                total_timesteps=total_timesteps,
+                callback=callback,
+                tb_log_name=f"ppo_{form['model_name']}",
+            )
             return model
         finally:
             env.close()
