@@ -1,4 +1,6 @@
+
 from pathlib import Path
+from statistics import mean, stdev
 
 import ale_py
 import gymnasium as gym
@@ -11,6 +13,7 @@ class Play:
     def play(self, model_path):
         model_path = Path(model_path)
         name = model_path.stem.lower()
+
         if name.startswith("ppo"):
             algorithm = PPO
         elif name.startswith("dqn"):
@@ -22,6 +25,7 @@ class Play:
             return
 
         gym.register_envs(ale_py)
+
         env = make_atari_env(
             "ALE/SpaceInvaders-v5",
             n_envs=1,
@@ -42,17 +46,49 @@ class Play:
         try:
             env = VecFrameStack(env, n_stack=4)
             env = VecTransposeImage(env)
+
             model = algorithm.load(str(model_path), env=env)
-            observation = env.reset()
-            score = 0.0
-            done = False
 
-            while not done:
-                action, _ = model.predict(observation, deterministic=False)
-                observation, rewards, dones, _ = env.step(action)
-                score += float(rewards[0])
-                done = bool(dones[0])
+            results = []
 
-            print(f"Model {model_path.name}: wynik = {score:.0f}")
+            for episode in range(5):
+                seed = 100 + episode
+                env.seed(seed)
+
+                observation = env.reset()
+                score = 0.0
+                steps = 0
+                done = False
+                actions = {}
+
+                while not done:
+                    action, _ = model.predict(
+                        observation,
+                        deterministic=False
+                    )
+
+                    action_id = int(action[0])
+                    actions[action_id] = actions.get(action_id, 0) + 1
+
+                    observation, rewards, dones, infos = env.step(action)
+
+                    score += float(rewards[0])
+                    steps += 1
+                    done = bool(dones[0])
+
+                results.append(score)
+
+                print(f"\nGra {episode + 1}/5")
+                print(f"Seed: {seed}")
+                print(f"Wynik: {score:.0f}")
+                print(f"Liczba kroków: {steps}")
+                print(f"Akcje: {dict(sorted(actions.items()))}")
+
+            print(f"\n--- PODSUMOWANIE {model_path.name} ---")
+            print(f"Średni wynik: {mean(results):.2f}")
+            print(f"Odchylenie standardowe: {stdev(results):.2f}")
+            print(f"Najlepszy wynik: {max(results):.0f}")
+            print(f"Najgorszy wynik: {min(results):.0f}")
+
         finally:
             env.close()

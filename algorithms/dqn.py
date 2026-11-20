@@ -7,10 +7,6 @@ from stable_baselines3.common.env_util import make_atari_env
 from stable_baselines3.common.vec_env import VecFrameStack
 
 
-def linear_schedule(initial_value):
-    return lambda progress_remaining: max(0.0, progress_remaining) * initial_value
-
-
 class DQNService:
     def train(self, form, callback):
         total_timesteps = int(form["total_timesteps"])
@@ -53,7 +49,7 @@ class DQNService:
             model = DQN(
                 "CnnPolicy",
                 env,
-                learning_rate=linear_schedule(learning_rate),
+                learning_rate=learning_rate,
                 buffer_size=buffer_size,
                 learning_starts=learning_starts,
                 tau=tau,
